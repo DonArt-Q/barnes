@@ -1,6 +1,11 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
+
+use std::vec;
+
 #[allow(non_snake_case)]
+
+
 
 
 pub struct CPU {
@@ -13,13 +18,23 @@ pub struct CPU {
     RAM: [u8; 0xFFFF],
 }
 pub struct Instruction {
-    pub mnemonic: Mnemonics,
-    pub addressing_mode: AddressingModes,
-    pub length: u8,
-    pub cycles: u8
+    mnemonic: Mnemonics,
+    addressing_mode: AddressingModes,
+    length: u8,
+    cycles: u8
 }
 
-
+impl Instruction {
+    fn new(mnemonic: Mnemonics, addressing_mode: AddressingModes, length: u8, cycles: u8) -> Self {
+        Instruction {
+            mnemonic,
+            addressing_mode,
+            length,
+            cycles,
+        }
+    }
+    
+}
 
 
 pub enum Flag {
@@ -90,19 +105,18 @@ pub enum Mnemonics {
 }
 
 pub enum AddressingModes {
-    ZeroPage,
+    ZeroPageN,
     ZeroPageX,
     ZeroPageY,
-    Absolute,
+    AbsoluteN,
     AbsoluteX,
     AbsoluteY,
-    Indirect,
+    IndirectN,
     IndirectX,
     IndirectY,
-    Implicit,
-    Accumulator,
+    ImplicitA,
     Immediate,
-    Relative,
+    Branching
 }
 
 
@@ -112,7 +126,28 @@ impl CPU {
     pub fn new() -> Self {
         todo!();
     }
+    pub fn generate_instruction_set() -> Vec<Instruction> {
+        vec![
+            Instruction::new(Mnemonics::BRK, AddressingModes::ImplicitA, 1, 7), Instruction::new(Mnemonics::ORA, AddressingModes::IndirectX, 2, 6), //00
+            Instruction::new(Mnemonics::NOP, AddressingModes::ImplicitA, 1, 1), Instruction::new(Mnemonics::NOP, AddressingModes::ImplicitA, 1, 1), //02
+            Instruction::new(Mnemonics::NOP, AddressingModes::ImplicitA, 1, 1), Instruction::new(Mnemonics::ORA, AddressingModes::ZeroPageN, 2, 3), //04
+            Instruction::new(Mnemonics::ASL, AddressingModes::ZeroPageN, 2, 5), Instruction::new(Mnemonics::NOP, AddressingModes::ImplicitA, 1, 1), //06
+            Instruction::new(Mnemonics::PHP, AddressingModes::ImplicitA, 1, 3), Instruction::new(Mnemonics::ORA, AddressingModes::Immediate, 2, 2), //08
+            Instruction::new(Mnemonics::ASL, AddressingModes::ImplicitA, 1, 2), Instruction::new(Mnemonics::NOP, AddressingModes::ImplicitA, 1, 1), //0A
+            Instruction::new(Mnemonics::NOP, AddressingModes::ImplicitA, 1, 1), Instruction::new(Mnemonics::ORA, AddressingModes::AbsoluteN, 3, 4), //0C
+            Instruction::new(Mnemonics::ASL, AddressingModes::AbsoluteN, 3, 6), Instruction::new(Mnemonics::NOP, AddressingModes::ImplicitA, 1, 1), //0E
+            Instruction::new(Mnemonics::BPL, AddressingModes::Branching, 2, 2), Instruction::new(Mnemonics::ORA, AddressingModes::IndirectX, 2, 5), //10
+            Instruction::new(Mnemonics::NOP, AddressingModes::ImplicitA, 1, 1), Instruction::new(Mnemonics::NOP, AddressingModes::ImplicitA, 1, 1), //12
+            Instruction::new(Mnemonics::NOP, AddressingModes::ImplicitA, 1, 1), Instruction::new(Mnemonics::ORA, AddressingModes::ZeroPageX, 2, 4), //14
+            Instruction::new(Mnemonics::ASL, AddressingModes::ZeroPageX, 2, 6), Instruction::new(Mnemonics::NOP, AddressingModes::ImplicitA, 1, 1), //16
+            Instruction::new(Mnemonics::CLC, AddressingModes::ImplicitA, 1, 2), Instruction::new(Mnemonics::ORA, AddressingModes::AbsoluteY, 3, 4), //18
+            Instruction::new(Mnemonics::NOP, AddressingModes::ImplicitA, 1, 1), Instruction::new(Mnemonics::NOP, AddressingModes::ImplicitA, 1, 1), //1A
+            Instruction::new(Mnemonics::NOP, AddressingModes::ImplicitA, 1, 1), Instruction::new(Mnemonics::ORA, AddressingModes::AbsoluteX, 3, 4), //1C
+            Instruction::new(Mnemonics::ASL, AddressingModes::AbsoluteX, 3, 7), Instruction::new(Mnemonics::NOP, AddressingModes::ImplicitA, 1, 1), //1E
+        ]
+    }
     pub fn get_flag(&mut self, flag: Flag) -> u8 {
+        
         match flag {
             Flag::C => self.FLAGS & 1,
             Flag::Z => (self.FLAGS & 1 << 1) >> 1,
@@ -138,15 +173,24 @@ impl CPU {
             _=> self.NOP()
         }
     }
-    
-
+    fn ADC() {}
+    fn AND() {}
+    fn ASL() {}
+    fn BCC() {}
+    fn BCS() {}
+    fn BEQ() {}
+    fn BIT() {}
+    fn BMI() {}
+    fn BNE() {}
+    fn BPL() {}
+    fn BRK() {}
+    fn BVC() {}
+    fn BVS() {}
     fn CLC(&mut self) {
-
         self.set_flag(Flag::C)
     }
-    fn NOP(&mut self) {
-        todo!()
-    }
+    
+    fn NOP(&mut self) {}
     
 }  
     
