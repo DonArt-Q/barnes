@@ -16,6 +16,8 @@ pub struct CPU {
     FLAGS: u8, //status flags
     SP: u8,
     RAM: [u8; 0xFFFF],
+    address: Option<u16>,
+    fetched: u8,
 }
 pub struct Instruction {
     mnemonic: Mnemonics,
@@ -124,9 +126,19 @@ pub enum AddressingModes {
 #[allow(non_snake_case)]
 impl CPU {
     pub fn new() -> Self {
-        todo!();
+        CPU {
+            A: 0,
+            X: 0,
+            Y: 0,
+            SP: 0xFD,
+            FLAGS: 0x34,
+            RAM: [0; 0xFFFF],
+            PC: 0,
+            address: None,
+            fetched: 0
+        }
     }
-    pub fn generate_instruction_set() -> Vec<Instruction> {
+    pub fn generate_instruction_set(&self) -> Vec<Instruction> {
         vec![
             Instruction::new(Mnemonics::BRK, AddressingModes::ImplicitA, 1, 7), Instruction::new(Mnemonics::ORA, AddressingModes::IndirectX, 2, 6), //00
             Instruction::new(Mnemonics::NOP, AddressingModes::ImplicitA, 1, 1), Instruction::new(Mnemonics::NOP, AddressingModes::ImplicitA, 1, 1), //02
@@ -146,7 +158,7 @@ impl CPU {
             Instruction::new(Mnemonics::ASL, AddressingModes::AbsoluteX, 3, 7), Instruction::new(Mnemonics::NOP, AddressingModes::ImplicitA, 1, 1), //1E
         ]
     }
-    pub fn get_flag(&mut self, flag: Flag) -> u8 {
+    fn get_flag(&mut self, flag: Flag) -> u8 {
         
         match flag {
             Flag::C => self.FLAGS & 1,
@@ -158,7 +170,17 @@ impl CPU {
         }
         
     }
-    pub fn set_flag(&mut self, flag: Flag) {
+    fn set_flag(&mut self, flag: Flag) {
+        match flag {
+            Flag::C => self.FLAGS |= 1,
+            Flag::Z => self.FLAGS |= 1 << 1,
+            Flag::I => self.FLAGS |= 1 << 2,
+            //Flag::D => self.FLAGS |= 1 << 3,
+            Flag::V => self.FLAGS |= 1 << 6,
+            Flag::N => self.FLAGS |= 1 << 7,
+        }
+    }
+    fn unset_flag(&mut self, flag: Flag) {
         match flag {
             Flag::C => self.FLAGS |= 1,
             Flag::Z => self.FLAGS |= 1 << 1,
@@ -169,9 +191,25 @@ impl CPU {
         }
     }
     pub fn call(&mut self, instruction: Instruction) {
-        match instruction.mnemonic {
-            _=> self.NOP()
+        let length = instruction.length;
+        let mut arguments: Vec<u8> = Vec::new();
+        while length > 0 {
+            self.PC += 1;
+            arguments.push(self.RAM[self.PC as usize])
+           
         }
+        self.address = match instruction.addressing_mode {
+            AddressingModes::AbsoluteN => Some(((arguments[0] as u16) << 8)| arguments[1] as u16),
+            AddressingModes::AbsoluteX => Some((((arguments[0] as u16) << 8)| arguments[1] as u16) + self.X as u16),
+            AddressingModes::AbsoluteY => Some((((arguments[0] as u16) << 8)| arguments[1] as u16) + self.Y as u16),
+            AddressingModes::ZeroPageN => Some(arguments[0] as u16),
+            AddressingModes::ZeroPageX => Some(arguments[0] as u16 + self.X as u16),
+            AddressingModes::ZeroPageY => Some(arguments[0] as u16 + self.X as u16),
+            
+            _ => None,
+        };
+        
+        
     }
     fn ADC() {}
     fn AND() {}
@@ -189,7 +227,16 @@ impl CPU {
     fn CLC(&mut self) {
         self.set_flag(Flag::C)
     }
-    
+    fn LDA(&mut self, value: u8) {
+        self.A = value;
+        if value == 0 {
+            self.set_flag(Flag::Z)
+        }
+        else {
+
+        }
+        
+    }
     fn NOP(&mut self) {}
     
 }  
