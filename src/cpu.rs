@@ -2,6 +2,7 @@
 #![allow(unused_variables)]
 
 use std::vec;
+use crate::bus::{ConnectedToBus, Bus};
 
 #[allow(non_snake_case)]
 
@@ -15,7 +16,8 @@ pub struct CPU {
     PC: u16, // program counter
     FLAGS: u8, //status flags
     SP: u8,
-    RAM: [u8; 0xFFFF],
+
+
     address: Option<u16>,
     fetched: u8,
 }
@@ -132,12 +134,12 @@ impl CPU {
             Y: 0,
             SP: 0xFD,
             FLAGS: 0x34,
-            RAM: [0; 0xFFFF],
             PC: 0,
             address: None,
             fetched: 0
         }
     }
+
     pub fn generate_instruction_set(&self) -> Vec<Instruction> {
         vec![
             Instruction::new(Mnemonics::BRK, AddressingModes::ImplicitA, 1, 7), Instruction::new(Mnemonics::ORA, AddressingModes::IndirectX, 2, 6), //00
@@ -195,7 +197,7 @@ impl CPU {
         let mut arguments: Vec<u8> = Vec::new();
         while length > 0 {
             self.PC += 1;
-            arguments.push(self.RAM[self.PC as usize])
+            
            
         }
         self.address = match instruction.addressing_mode {
@@ -209,6 +211,9 @@ impl CPU {
             _ => None,
         };
         
+        
+    }
+    fn clock() {
         
     }
     fn ADC() {}
@@ -241,7 +246,15 @@ impl CPU {
     
 }  
     
+impl ConnectedToBus for CPU {
+    fn read(address: u16, bus: std::rc::Rc<Bus>) -> u8 {
+        todo!()
+    }
 
+    fn write(address: u16, data: u8, bus: std::rc::Rc<Bus>) {
+        todo!()
+    }
+}
     
     
 
